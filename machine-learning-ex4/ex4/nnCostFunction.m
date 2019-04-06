@@ -62,19 +62,41 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% Part1 前向传播，计算代价函数
+X = [ones(m,1) X];                 % 增加偏置单元1
+for i = 1:m
+    a1 = X(i,:);                   %a1为X的行向量
+    a1 = a1';                      %a1为列向量
+    % layer 2
+    z2 = Theta1 * a1;              %theta1为25*401，a1为401*1， z2为25*1
+    a2 = sigmoid(z2);              % a2为25*1列向量
+    a2 = [1; a2];                  % 增加偏置单元1，a2为26*1
+    % layer 3
+    z3 = Theta2 * a2;              
+    a3 = sigmoid(z3);              % a3为输出，是一个列向量
+
+    p = zeros(num_labels, 1);      % p是10*1
+    p(y(i)) = 1;
+    J = J + sum((-p).*log(a3) - (1-p).*log(1-a3));
+
+    % backpropagation;
+    delta3 = a3 - p;                                            % delta3为10*1
+    delta2 = Theta2(:,2:end)' * delta3 .* sigmoidGradient(z2);  % delta2为25*1
+    Theta1_grad = Theta1_grad + delta2 * a1';
+    Theta2_grad = Theta2_grad + delta3 * a2';
+end
 
 
-
-
-
-
-
-
-
-
-
-
-
+% 2.正规化，不考虑偏置单元
+temp1 = Theta1(:,2:size(Theta1,2)).^2; 
+temp2 = Theta2(:,2:size(Theta2,2)).^2;
+reg = lambda / (2*m) * (sum(temp1(:)) + sum(temp2(:)));
+J = J + reg; 
+% 3.反向传播正规化
+Theta1(:,1) = 0;
+Theta2(:,1) = 0;
+Theta1_grad = Theta1_grad + lambda / m * Theta1;
+Theta2_grad = Theta2_grad + lambda / m * Theta2;
 
 
 
